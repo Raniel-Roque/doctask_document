@@ -11,12 +11,15 @@ import TableRow from "@tiptap/extension-table-row";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import Underline from "@tiptap/extension-underline";
-import { useEditorStore } from "@/store/use-editor-store";
 import FontFamily from "@tiptap/extension-font-family";
 import TextStyle from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
 import Link from "@tiptap/extension-link";
+import TextAlign from '@tiptap/extension-text-align'
+
+import { useEditorStore } from "@/store/use-editor-store";
+import { FontSizeExtension } from "@/extensions/font-size";
 
 export const Editor = () => {
     const { setEditor } = useEditorStore();
@@ -33,7 +36,7 @@ export const Editor = () => {
         },
         editorProps: {
             attributes: {
-                style: "padding-left: 56px; padding-right: 56px; font-family: 'Times New Roman', serif;",
+                style: "padding-left: 56px; padding-right: 56px; font-family: 'Times New Roman', serif; font-size: 11px;",
                 class: "focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] w-[816px] pt-10 pr-14 pb-10 cursor-text",
             },
             handleDOMEvents: {
@@ -72,6 +75,10 @@ export const Editor = () => {
                 defaultProtocol: "https",
                 linkOnPaste: true,
             }),
+            TextAlign.configure({
+                types: ["heading", "paragraph"]
+            }),
+            FontSizeExtension,
         ],
         content: ``,
     });

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, ListTodoIcon, LucideIcon, MessageSquarePlusIcon, PrinterIcon, Redo2Icon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, ListIcon, ListOrderedIcon, ListTodoIcon, LucideIcon, MessageSquarePlusIcon, MinusIcon, PlusIcon, PrinterIcon, Redo2Icon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEditorStore } from "@/store/use-editor-store";
 import { Separator } from "@/components/ui/separator";
@@ -14,33 +14,51 @@ import { Button } from "@/components/ui/button";
 
 const FontFamilyButton = () => {
     const { editor } = useEditorStore();
+    const [currentFont, setCurrentFont] = useState("Times New Roman");
+
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateFontFamily = () => {
+            setCurrentFont(editor.getAttributes("textStyle").fontFamily || "Times New Roman");
+        };
+
+        editor.on("selectionUpdate", updateFontFamily);
+        
+        return () => {
+            editor.off("selectionUpdate", updateFontFamily);
+        };
+    }, [editor]);
 
     const fonts = [
-        { label: "Times New Roman", value:"Times New Roman" },
-        { label: "Arial", value:"Arial" },
-        { label: "Courier New", value:"Courier New" },
-        { label: "Georgia", value:"Georgia" },
-        { label: "Verdana", value:"Verdana" }
+        { label: "Times New Roman", value: "Times New Roman" },
+        { label: "Arial", value: "Arial" },
+        { label: "Courier New", value: "Courier New" },
+        { label: "Georgia", value: "Georgia" },
+        { label: "Verdana", value: "Verdana" },
     ];
+
+    const handleFontChange = (value: string) => {
+        editor?.chain().focus().setFontFamily(value).run();
+        setCurrentFont(value); 
+    };
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <button className="h-7 w-[120px] shrink-0 flex items-center justify-between rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
-                    <span className="truncate">
-                        {editor?.getAttributes("textStyle").fontFamily || "Times New Roman"}
-                    </span>
+                    <span className="truncate">{currentFont}</span>
                     <ChevronDownIcon className="ml-2 size-4 shrink-0"/>
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="p=1 flex flex-col gap-y-1">
                 {fonts.map(({ label, value }) => (
                     <button 
-                        onClick={() => editor?.chain().focus().setFontFamily(value).run()}
+                        onClick={() => handleFontChange(value)}
                         key={value} 
                         className={cn(
                             "flex items-center gap-x-2 px-2 py-1 rounded-sm hover:bg-neutral-200/80",
-                            editor?.getAttributes("textStyle").fontFamily === value && "hover:bg-neutral-200/80"
+                            currentFont === value && "bg-neutral-200/80"
                         )}
                         style={{ fontFamily: value }}
                     >
@@ -49,59 +67,74 @@ const FontFamilyButton = () => {
                 ))}
             </DropdownMenuContent>
         </DropdownMenu>
-    )
-}
+    );
+};
 
 const HeadingLevelButton = () => {
     const { editor } = useEditorStore();
+    const [currentHeading, setCurrentHeading] = useState("Normal Text");
 
     const headings = [
-        { label: "Normal Text", value: 0, fontSize: "16px" },
-        { label: "Heading 1", value: 1, fontSize: "32px" },
-        { label: "Heading 2", value: 2, fontSize: "24px" },
-        { label: "Heading 3", value: 3, fontSize: "20px" },
-        { label: "Heading 4", value: 4, fontSize: "18px" },
-        { label: "Heading 5", value: 5, fontSize: "16px" },
+        { label: "Normal Text", value: 0, fontSize: "11px" },
+        { label: "Heading 1", value: 1, fontSize: "12px" },
+        { label: "Heading 2", value: 2, fontSize: "12px" },
+        { label: "Heading 3", value: 3, fontSize: "11px" },
+        { label: "Heading 4", value: 4, fontSize: "11px" },
+        { label: "Heading 5", value: 5, fontSize: "11px" },
     ];
 
-    const getCurrentHeading = () => {
-        for ( let level = 1; level <= 5; level++) {
-            if (editor?.isActive("heading", { level })) {
-                return `Heading ${level}`;
-            }
-        }
+    useEffect(() => {
+        if (!editor) return;
 
-        return "Normal text";
+        const updateHeading = () => {
+            let heading = "Normal Text";
+            for (let level = 1; level <= 5; level++) {
+                if (editor.isActive("heading", { level })) {
+                    heading = `Heading ${level}`;
+                }
+            }
+            setCurrentHeading(heading);
+        };
+
+        editor.on("selectionUpdate", updateHeading);
+        
+        return () => {
+            editor.off("selectionUpdate", updateHeading);
+        };
+    }, [editor]);
+
+    const handleHeadingChange = (value: number) => {
+        if (!editor) return;
+
+        if (value === 0) {
+            editor.chain().focus().setParagraph().unsetBold().run(); // Normal text (remove heading & bold)
+            setCurrentHeading("Normal Text");
+        } else if (value === 1 || value === 2) {
+            editor.chain().focus().toggleHeading({ level: value as Level }).setBold().run(); // Ensure H1 and H2 are bolded
+            setCurrentHeading(`Heading ${value}`);
+        } else {
+            editor.chain().focus().toggleHeading({ level: value as Level }).unsetBold().run(); // Ensure H3-H5 are not bolded
+            setCurrentHeading(`Heading ${value}`);
+        }
     };
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className="h-7 min-w-7 shrink-0 flex items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
-                    <span className="truncate">
-                        {getCurrentHeading()}
-                    </span>
+                <button className="h-7 min-w-7 flex items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
+                    <span className="truncate">{currentHeading}</span>
                     <ChevronDownIcon className="ml-2 size-4 shrink-0"/>
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="p-1 flex flex-col gap-y-1">
-                {headings.map(({ label, value, fontSize}) => (
+                {headings.map(({ label, value, fontSize }) => (
                     <button 
                         key={value}
-                        style={{ fontSize }}
-                        onClick={() => {
-                            if (value === 0) {
-                                editor?.chain().focus().setParagraph().unsetBold().run(); // Remove bold for normal text
-                            } else if (value === 1 || value === 2) {
-                                editor?.chain().focus().toggleHeading({ level: value as Level }).setBold().run(); // Apply bold for h1 and h2
-                            } else {
-                                editor?.chain().focus().toggleHeading({ level: value as Level }).unsetBold().run(); // Ensure no bold for h3, h4, h5
-                            }
-                        }}
-                        
+                        style={{ fontSize, fontWeight: value === 1 || value === 2 ? "bold" : "normal" }} // Ensure H1 & H2 are bold in dropdown
+                        onClick={() => handleHeadingChange(value)}
                         className={cn(
                             "flex items-center gap-x-2 px-2 py-1 rounded-sm hover:bg-neutral-200/80",
-                            (value === 0 && !editor?.isActive("heading")) ||  editor?.isActive("heading", {level: value}) && "hover:bg-neutral-200/80"
+                            currentHeading === label && "bg-neutral-200/80"
                         )}
                     >
                         {label}
@@ -109,16 +142,30 @@ const HeadingLevelButton = () => {
                 ))}
             </DropdownMenuContent>
         </DropdownMenu>
-    )
-}
+    );
+};
 
 const TextColorButton = () => {
     const { editor } = useEditorStore();
+    const [currentColor, setCurrentColor] = useState("#000000");
 
-    const value = editor?.getAttributes("textStyle").color || "#000000";
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateTextColor = () => {
+            setCurrentColor(editor.getAttributes("textStyle").color || "#000000");
+        };
+
+        editor.on("selectionUpdate", updateTextColor);
+
+        return () => {
+            editor.off("selectionUpdate", updateTextColor);
+        };
+    }, [editor]);
 
     const onChange = (color: ColorResult) => {
         editor?.chain().focus().setColor(color.hex).run();
+        setCurrentColor(color.hex);
     };
 
     return (
@@ -126,11 +173,11 @@ const TextColorButton = () => {
             <DropdownMenuTrigger asChild>
                 <button className="h-7 min-w-7 flex flex-col items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
                     <span className="text-sx font-semibold">A</span>
-                    <div className="w-4 h-0.5 rounded-sm" style={{ backgroundColor: value }} />
+                    <div className="w-4 h-0.5 rounded-sm" style={{ backgroundColor: currentColor }} />
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="p-0">
-                <CompactPicker color={value} onChange={onChange} />
+                <CompactPicker color={currentColor} onChange={onChange} />
             </DropdownMenuContent>
         </DropdownMenu>
     );
@@ -138,11 +185,25 @@ const TextColorButton = () => {
 
 const HighlightColorButton = () => {
     const { editor } = useEditorStore();
+    const [highlightColor, setHighlightColor] = useState("#FFFFFF");
 
-    const value = editor?.getAttributes("highlight").color || "#FFFFFF";
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateHighlightColor = () => {
+            setHighlightColor(editor.getAttributes("highlight").color || "#FFFFFF");
+        };
+
+        editor.on("selectionUpdate", updateHighlightColor);
+
+        return () => {
+            editor.off("selectionUpdate", updateHighlightColor);
+        };
+    }, [editor]);
 
     const onChange = (color: ColorResult) => {
-        editor?.chain().focus().setHighlight({color: color.hex}).run();
+        editor?.chain().focus().setHighlight({ color: color.hex }).run();
+        setHighlightColor(color.hex); // ✅ Update UI immediately
     };
 
     return (
@@ -150,11 +211,11 @@ const HighlightColorButton = () => {
             <DropdownMenuTrigger asChild>
                 <button className="h-7 min-w-7 flex flex-col items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
                     <HighlighterIcon className="mt-0.5 size-4"/>
-                    <div className="w-4 h-0.5 mt-0.5 rounded-sm" style={{ backgroundColor: value }} />
+                    <div className="w-4 h-0.5 mt-0.5 rounded-sm" style={{ backgroundColor: highlightColor }} />
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="p-0">
-                <CompactPicker color={value} onChange={onChange} />
+                <CompactPicker color={highlightColor} onChange={onChange} />
             </DropdownMenuContent>
         </DropdownMenu>
     );
@@ -272,6 +333,208 @@ const ImageButton = () => {
         </>
     );
 }
+
+/* ALIGNMENT */
+interface AlignButtonProps {
+    alignment: "left" | "center" | "right" | "justify";
+    icon: LucideIcon;
+    activeAlignment: string;
+    setActiveAlignment: (alignment: string) => void;
+}
+
+const AlignButton: React.FC<AlignButtonProps> = ({ alignment, icon: Icon, activeAlignment, setActiveAlignment }) => {
+    const { editor } = useEditorStore();
+    const isActive = activeAlignment === alignment;
+
+    const handleClick = () => {
+        editor?.chain().focus().setTextAlign(alignment).run();
+        setActiveAlignment(alignment);
+    };
+
+    return (
+        <button
+            onClick={handleClick}
+            className={cn(
+                "h-7 min-w-7 flex items-center justify-center rounded-sm hover:bg-neutral-200/80",
+                isActive && "bg-neutral-300"
+            )}
+        >
+            <Icon className="size-4" />
+        </button>
+    );
+};
+
+const AlignmentButtons: React.FC = () => {
+    const { editor } = useEditorStore();
+    const [activeAlignment, setActiveAlignment] = useState<string>("");
+
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateState = () => {
+            if (editor.isActive({ textAlign: "left" })) {
+                setActiveAlignment("left");
+            } else if (editor.isActive({ textAlign: "center" })) {
+                setActiveAlignment("center");
+            } else if (editor.isActive({ textAlign: "right" })) {
+                setActiveAlignment("right");
+            } else if (editor.isActive({ textAlign: "justify" })) {
+                setActiveAlignment("justify");
+            } else {
+                setActiveAlignment("left");
+            }
+        };
+
+        editor.on("selectionUpdate", updateState);
+
+        return () => {
+            editor.off("selectionUpdate", updateState);
+        };
+    }, [editor]);
+
+    return (
+        <>
+            <AlignButton alignment="left" icon={AlignLeftIcon} activeAlignment={activeAlignment} setActiveAlignment={setActiveAlignment} />
+            <AlignButton alignment="center" icon={AlignCenterIcon} activeAlignment={activeAlignment} setActiveAlignment={setActiveAlignment} />
+            <AlignButton alignment="right" icon={AlignRightIcon} activeAlignment={activeAlignment} setActiveAlignment={setActiveAlignment} />
+            <AlignButton alignment="justify" icon={AlignJustifyIcon} activeAlignment={activeAlignment} setActiveAlignment={setActiveAlignment} />
+        </>
+    );
+};
+
+/* LISTS */
+const BulletListButton = () => {
+    const { editor } = useEditorStore();
+    
+    return (
+        <button
+            onClick={() => editor?.chain().focus().toggleBulletList().run()}
+            className={cn(
+                "h-7 min-w-7 flex flex-col items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm",
+                editor?.isActive("bulletList") && "bg-neutral-200/80"
+            )}
+        >
+            <ListIcon className="mt-0.5 size-4" />
+        </button>
+    );
+};
+
+const OrderedListButton = () => {
+    const { editor } = useEditorStore();
+    
+    return (
+        <button
+            onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+            className={cn(
+                "h-7 min-w-7 flex flex-col items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm",
+                editor?.isActive("orderedList") && "bg-neutral-200/80"
+            )}
+        >
+            <ListOrderedIcon className="mt-0.5 size-4" />
+        </button>
+    );
+};
+
+const FontSizeButton = () => {
+    const { editor } = useEditorStore();
+
+    const currentFontSize = editor?.getAttributes("textStyle").fontSize
+        ? editor?.getAttributes("textStyle").fontSize.replace("px", "")
+        : "11";
+
+    const [fontSize, setFontSize] = useState(currentFontSize);
+    const [inputValue, setInputValue] = useState(fontSize);
+    const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateFontSizeFromSelection = () => {
+            const newSize = editor.getAttributes("textStyle").fontSize?.replace("px", "") || "11";
+            setFontSize(newSize);
+            setInputValue(newSize);
+        };
+
+        editor.on("selectionUpdate", updateFontSizeFromSelection);
+        
+        return () => {
+            editor.off("selectionUpdate", updateFontSizeFromSelection);
+        };
+    }, [editor]);
+
+    const updateFontSize = (newSize: string) => {
+        const size = parseInt(newSize);
+        if (!isNaN(size) && size > 0) {
+            editor?.chain().focus().setFontSize(`${size}px`).run();
+            setFontSize(newSize);
+            setInputValue(newSize);
+            setIsEditing(false);
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInputValue(e.target.value);
+    };
+
+    const handleInputBlur = () => {
+        updateFontSize(inputValue);
+    };
+        
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            updateFontSize(inputValue);
+            editor?.commands.focus();
+        }
+    };
+
+    const increment = () => {
+        const newSize = parseInt(fontSize) + 1;
+        if (newSize > 0) {
+            updateFontSize(newSize.toString());
+        }
+    };
+
+    const decrement = () => {
+        const newSize = parseInt(fontSize) - 1;
+        if (newSize > 0) {
+            updateFontSize(newSize.toString());
+        }
+    };
+
+    return (
+        <div className="flex items-center gap-x-0.5">
+            <button onClick={decrement} className="h-7 w-7 shrink-0 flex items-center justify-center rounded-sm hover:bg-neutral-200/80">
+                <MinusIcon className="size-4" />
+            </button>
+            {isEditing ? (
+                <input 
+                    type="text"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onBlur={handleInputBlur}
+                    onKeyDown={handleKeyDown}
+                    className="h-7 w-10 text-sm border border-neutral-400 text-center rounded-sm bg-transparent focus-outline-none focus:ring-0"
+                />
+            ) : (
+                <button 
+                    onClick={() => {
+                        setIsEditing(true);
+                        setFontSize(currentFontSize);
+                    }}
+                    className="h-7 w-10 text-sm border border-neutral-400 text-center rounded-sm bg-transparent cursor-text"
+                >
+                    {fontSize}
+                </button>
+            )}
+
+            <button onClick={increment} className="h-7 w-7 shrink-0 flex items-center justify-center rounded-sm hover:bg-neutral-200/80">
+                <PlusIcon className="size-4" />
+            </button>
+        </div>
+    );
+};
+
 interface ToolbarButtonProps {
     onClick?: () => void;
     isActive?: boolean;
@@ -380,7 +643,7 @@ export const Toolbar = () => {
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
             <HeadingLevelButton />
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-            {/* TODO Font Size */}
+            <FontSizeButton />
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
             {sections[1].map((item) => (
                 <ToolbarButton key={item.label} {...item}/>
@@ -388,12 +651,15 @@ export const Toolbar = () => {
             <TextColorButton />
             <HighlightColorButton />
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-
             <LinkButton />
             <ImageButton />
-            {/* TODO Align */}
-            {/* TODO Line Height */}
-            {/* TODO List */}
+            <Separator orientation="vertical" className="h-6 bg-neutral-300" />
+            <AlignmentButtons />
+            <Separator orientation="vertical" className="h-6 bg-neutral-300" />
+            {/* TODO Line Height */}            
+            <BulletListButton />
+            <OrderedListButton />
+            <Separator orientation="vertical" className="h-6 bg-neutral-300" />
             {sections[2].map((item) => (
                 <ToolbarButton key={item.label} {...item}/>
             ))}
