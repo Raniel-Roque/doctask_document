@@ -12,6 +12,8 @@ import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 import Underline from '@tiptap/extension-underline'
 import { useEditorStore } from '@/store/use-editor-store';
+import FontFamily from '@tiptap/extension-font-family'
+import TextStyle from '@tiptap/extension-text-style'
 
 export const Editor = () => {
     const { setEditor } = useEditorStore();
@@ -43,10 +45,11 @@ export const Editor = () => {
         },
         editorProps: {
             attributes: {
-                style: "padding-left: 56px; padding-right: 56px;",
+                style: "padding-left: 56px; padding-right: 56px; font-family: 'Times New Roman', serif;",
                 class: "focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] w-[816px] pt-10 pr-14 pb-10 cursor-text"
             },
         },
+        
         extensions: [
             StarterKit,
             TaskList,
@@ -62,22 +65,11 @@ export const Editor = () => {
             TableCell,
             ImageResize,
             Underline,
+            FontFamily,
+            TextStyle
         ],
         content: `
-        <table>
-          <tbody>
-            <tr>
-              <th>Name</th>
-              <th colspan="3">Description</th>
-            </tr>
-            <tr>
-              <td>Cyndi Lauper</td>
-              <td>Singer</td>
-              <td>Songwriter</td>
-              <td>Actress</td>
-            </tr>
-          </tbody>
-        </table>
+
       `,
     })
 
