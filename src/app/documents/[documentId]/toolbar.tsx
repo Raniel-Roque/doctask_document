@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, ListIcon, ListOrderedIcon, ListTodoIcon, LucideIcon, MessageSquarePlusIcon, MinusIcon, PlusIcon, PrinterIcon, Redo2Icon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon } from "lucide-react";
+import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon, BoldIcon, ChevronDownIcon, HighlighterIcon, ImageIcon, ItalicIcon, Link2Icon, ListCollapseIcon, ListIcon, ListOrderedIcon, ListTodoIcon, LucideIcon, MessageSquarePlusIcon, MinusIcon, PlusIcon, PrinterIcon, Redo2Icon, RemoveFormattingIcon, SearchIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon, UploadIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEditorStore } from "@/store/use-editor-store";
 import { Separator } from "@/components/ui/separator";
@@ -438,6 +438,7 @@ const OrderedListButton = () => {
 const FontSizeButton = () => {
     const { editor } = useEditorStore();
 
+    // Get the current font size from the editor's selection
     const currentFontSize = editor?.getAttributes("textStyle").fontSize
         ? editor?.getAttributes("textStyle").fontSize.replace("px", "")
         : "11";
@@ -448,19 +449,36 @@ const FontSizeButton = () => {
 
     useEffect(() => {
         if (!editor) return;
-
+    
         const updateFontSizeFromSelection = () => {
-            const newSize = editor.getAttributes("textStyle").fontSize?.replace("px", "") || "11";
+            let newSize = "11"; // Default font size
+    
+            // Check if the selected text is part of a heading
+            for (let level = 1; level <= 5; level++) {
+                if (editor.isActive("heading", { level })) {
+                    newSize = level === 1 || level === 2 ? "12" : "11"; // Adjust based on heading levels
+                    break;
+                }
+            }
+    
+            // If not a heading, get the font size from textStyle
+            if (newSize === "11") {
+                newSize = editor.getAttributes("textStyle").fontSize?.replace("px", "") || "11";
+            }
+    
             setFontSize(newSize);
             setInputValue(newSize);
         };
-
+    
         editor.on("selectionUpdate", updateFontSizeFromSelection);
-        
+        editor.on("transaction", updateFontSizeFromSelection); // ✅ Updates immediately on change
+    
         return () => {
             editor.off("selectionUpdate", updateFontSizeFromSelection);
+            editor.off("transaction", updateFontSizeFromSelection); // Cleanup event listeners
         };
     }, [editor]);
+     
 
     const updateFontSize = (newSize: string) => {
         const size = parseInt(newSize);
@@ -479,7 +497,7 @@ const FontSizeButton = () => {
     const handleInputBlur = () => {
         updateFontSize(inputValue);
     };
-        
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
             e.preventDefault();
@@ -534,6 +552,42 @@ const FontSizeButton = () => {
         </div>
     );
 };
+
+const LineHeightButton = () => {
+    const { editor } = useEditorStore();
+
+    const lineHeights = [
+        { label: "Default", value: "normal"},
+        { label: "Single", value: "1"},
+        { label: "1.15", value: "1.15"},
+        { label: "1.5", value: "1.5"},
+        { label: "Double", value: "2"},
+    ];
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button className="h-7 min-w-7 shrink-0 flex items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm">
+                    <ListCollapseIcon className="mt-0.5 size-4" />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="p-1 flex flex-col gap-y-1">
+                {lineHeights.map(({ label, value }) => (
+                    <button 
+                        key={value}
+                        onClick={() => editor?.chain().focus().setLineHeight(value).run()} 
+                        className={cn(
+                            "flex items-center gap-x-2 px-2 py-1 rounded-sm hover:bg-neutral-200/80",
+                            editor?.getAttributes("paragraph").lineHeight === value && "bg-neutral-200/80"
+                        )}
+                    >
+                        <span className="text-sm">{label}</span>
+                    </button>                
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
+}
 
 interface ToolbarButtonProps {
     onClick?: () => void;
@@ -656,7 +710,7 @@ export const Toolbar = () => {
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
             <AlignmentButtons />
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-            {/* TODO Line Height */}            
+            <LineHeightButton />          
             <BulletListButton />
             <OrderedListButton />
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
