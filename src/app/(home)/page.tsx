@@ -4,13 +4,14 @@ import { useQuery } from "convex/react";
 import { Navbar } from "./navbar";
 import { TemplateGallery } from "./template-gallery";
 import { api } from "../../../convex/_generated/api";
+import { FullscreenLoader } from "@/components/fullscreen-loader";
 
 const Home = () => {
   const documents = useQuery(api.documents.getDocuments);
   
   if (documents === undefined) {
     return (
-      <p>Loading...</p>
+      <FullscreenLoader label="Loading Document Page..."/>
     )
   }
   return (
