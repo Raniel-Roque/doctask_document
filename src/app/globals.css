@@ -88,30 +88,28 @@ body {
 }
 
 .tiptap {
-  /* List styles */
-  ul, 
-  ol {
+ /* List styles */
+ul, 
+ol {
     padding: 0 1rem;
-    margin: 1.25rem 1rem 1.25rem 0.4rem;
-  }
+    margin-left: 0.4rem;
+}
 
-  ul li {
+ul li {
     list-style-type: disc;
 
     p {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
+        margin: 0; 
     }
-  }
+}
 
-  ol li {
+ol li {
     list-style-type: decimal;
 
     p {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
+        margin: 0; 
     }
-  }
+}
 
   /* Task list specific styles */
   ul[data-type="taskList"] {

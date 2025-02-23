@@ -405,13 +405,30 @@ const AlignmentButtons: React.FC = () => {
 /* LISTS */
 const BulletListButton = () => {
     const { editor } = useEditorStore();
-    
+    const [isActive, setIsActive] = useState(false);
+
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateState = () => {
+            setIsActive(editor.isActive("bulletList"));
+        };
+
+        editor.on("selectionUpdate", updateState);
+        editor.on("transaction", updateState);
+
+        return () => {
+            editor.off("selectionUpdate", updateState);
+            editor.off("transaction", updateState);
+        };
+    }, [editor]);
+
     return (
         <button
             onClick={() => editor?.chain().focus().toggleBulletList().run()}
             className={cn(
                 "h-7 min-w-7 flex flex-col items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm",
-                editor?.isActive("bulletList") && "bg-neutral-200/80"
+                isActive && "bg-neutral-300"
             )}
         >
             <ListIcon className="mt-0.5 size-4" />
@@ -421,13 +438,30 @@ const BulletListButton = () => {
 
 const OrderedListButton = () => {
     const { editor } = useEditorStore();
-    
+    const [isActive, setIsActive] = useState(false);
+
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateState = () => {
+            setIsActive(editor.isActive("orderedList"));
+        };
+
+        editor.on("selectionUpdate", updateState);
+        editor.on("transaction", updateState);
+
+        return () => {
+            editor.off("selectionUpdate", updateState);
+            editor.off("transaction", updateState);
+        };
+    }, [editor]);
+
     return (
         <button
             onClick={() => editor?.chain().focus().toggleOrderedList().run()}
             className={cn(
                 "h-7 min-w-7 flex flex-col items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-sm",
-                editor?.isActive("orderedList") && "bg-neutral-200/80"
+                isActive && "bg-neutral-300"
             )}
         >
             <ListOrderedIcon className="mt-0.5 size-4" />
@@ -589,6 +623,102 @@ const LineHeightButton = () => {
     )
 }
 
+const BoldButton = () => {
+    const { editor } = useEditorStore();
+    const [isActive, setIsActive] = useState(false);
+
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateState = () => {
+            setIsActive(editor.isActive("bold"));
+        };
+
+        editor.on("selectionUpdate", updateState);
+        editor.on("transaction", updateState);
+
+        return () => {
+            editor.off("selectionUpdate", updateState);
+            editor.off("transaction", updateState);
+        };
+    }, [editor]);
+
+    return (
+        <button
+            onClick={() => editor?.chain().focus().toggleBold().run()}
+            className={cn("h-7 min-w-7 flex items-center justify-center rounded-sm hover:bg-neutral-200/80", 
+                isActive && "bg-neutral-300"
+            )}
+        >
+            <BoldIcon className="size-4" />
+        </button>
+    );
+};
+
+const ItalicButton = () => {
+    const { editor } = useEditorStore();
+    const [isActive, setIsActive] = useState(false);
+
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateState = () => {
+            setIsActive(editor.isActive("italic"));
+        };
+
+        editor.on("selectionUpdate", updateState);
+        editor.on("transaction", updateState);
+
+        return () => {
+            editor.off("selectionUpdate", updateState);
+            editor.off("transaction", updateState);
+        };
+    }, [editor]);
+
+    return (
+        <button
+            onClick={() => editor?.chain().focus().toggleItalic().run()}
+            className={cn("h-7 min-w-7 flex items-center justify-center rounded-sm hover:bg-neutral-200/80", 
+                isActive && "bg-neutral-300"
+            )}
+        >
+            <ItalicIcon className="size-4" />
+        </button>
+    );
+};
+
+const UnderlineButton = () => {
+    const { editor } = useEditorStore();
+    const [isActive, setIsActive] = useState(false);
+
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateState = () => {
+            setIsActive(editor.isActive("underline"));
+        };
+
+        editor.on("selectionUpdate", updateState);
+        editor.on("transaction", updateState);
+
+        return () => {
+            editor.off("selectionUpdate", updateState);
+            editor.off("transaction", updateState);
+        };
+    }, [editor]);
+
+    return (
+        <button
+            onClick={() => editor?.chain().focus().toggleUnderline().run()}
+            className={cn("h-7 min-w-7 flex items-center justify-center rounded-sm hover:bg-neutral-200/80", 
+                isActive && "bg-neutral-300"
+            )}
+        >
+            <UnderlineIcon className="size-4" />
+        </button>
+    );
+};
+
 interface ToolbarButtonProps {
     onClick?: () => void;
     isActive?: boolean;
@@ -649,26 +779,6 @@ export const Toolbar = () => {
         ],
         [
             {
-                label: "Bold",
-                icon: BoldIcon,
-                isActive: editor?.isActive("bold") || editor?.isActive("heading", { level: 1 }) || editor?.isActive("heading", { level: 2 }),
-                onClick: () => editor?.chain().focus().toggleBold().run(),
-            },
-            {
-                label: "Italic",
-                icon: ItalicIcon,
-                isActive: editor?.isActive("italic"),
-                onClick: () => editor?.chain().focus().toggleItalic().run(),
-            },
-            {
-                label: "Underline",
-                icon: UnderlineIcon,
-                isActive: editor?.isActive("underline"),
-                onClick: () => editor?.chain().focus().toggleUnderline().run(),
-            },
-        ],
-        [
-            {
                 label: "Comment",
                 icon: MessageSquarePlusIcon,
                 isActive: false,
@@ -699,9 +809,9 @@ export const Toolbar = () => {
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
             <FontSizeButton />
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-            {sections[1].map((item) => (
-                <ToolbarButton key={item.label} {...item}/>
-            ))}
+            <BoldButton />
+            <ItalicButton />
+            <UnderlineButton />
             <TextColorButton />
             <HighlightColorButton />
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
@@ -714,7 +824,7 @@ export const Toolbar = () => {
             <BulletListButton />
             <OrderedListButton />
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
-            {sections[2].map((item) => (
+            {sections[1].map((item) => (
                 <ToolbarButton key={item.label} {...item}/>
             ))}
         </div>
