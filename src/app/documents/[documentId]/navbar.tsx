@@ -17,6 +17,8 @@ import {
     MenubarTrigger
 } from "@/components/ui/menubar"
 
+import { Avatars } from "./avatars";
+import { Inbox } from "./inbox";
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { DocumentInput } from "./document-input";
 import { BoldIcon, FileIcon, FileJsonIcon, FilePenIcon, FilePlusIcon, FileTextIcon, GlobeIcon, ItalicIcon, PrinterIcon, Redo2Icon, RemoveFormattingIcon, StrikethroughIcon, TextIcon, TrashIcon, UnderlineIcon, Undo2Icon } from "lucide-react";
@@ -238,6 +240,8 @@ export const Navbar = () => {
                 </div>
             </div>
             <div className="flex gap-3 items-center pl-6">
+                <Inbox />
+                <Avatars />
                 <OrganizationSwitcher 
                     afterCreateOrganizationUrl="/"
                     afterLeaveOrganizationUrl="/"
