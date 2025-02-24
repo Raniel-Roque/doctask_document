@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import { FaCaretDown } from "react-icons/fa";
 import { useStorage, useMutation } from "@liveblocks/react";
-import { LEFT_MARGIN_DEFAULT, RIGHT_MARGIN_DEFAULT } from "@/constants/margins";
+import { LEFT_MARGIN_DEFAULT, MIN_SPACE, RIGHT_MARGIN_DEFAULT } from "@/constants/margins";
+import { PAGE_WIDTH } from "@/constants/page";
 
 const markers = Array.from({ length: 83 }, (_, i) => i)
 
@@ -29,9 +30,6 @@ export const Ruler = () => {
     }
     
     const handleMouseMove = ( e: React.MouseEvent) => {
-        const PAGE_WIDTH = 816;
-        const MIN_SPACE = 100;
-
         if ((isDraggingLeft || isDraggingRight) && rulerRef.current) {
             const container = rulerRef.current.querySelector("#ruler-container")
             
@@ -70,15 +68,12 @@ export const Ruler = () => {
     return ( 
         <div 
             ref={rulerRef}
-            className="w-[816px] mx-auto h-6 border-b border-gray-300 flex items-end relative select-none print:hidden"
+            className={`w-[${PAGE_WIDTH}px] mx-auto h-6 border-b border-gray-300 flex items-end relative select-none print:hidden`}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
         >
-            <div
-                id="ruler-container"
-                className="w-full h-full relative"
-            >
+            <div id="ruler-container" className="w-full h-full relative">
                 <Marker 
                     position={leftMargin}
                     isLeft={true}
@@ -94,9 +89,9 @@ export const Ruler = () => {
                     onDoubleClick={handleRightDoubleClick}
                 />
                 <div className="absolute inset-x-0 bottom-0 h-full">
-                    <div className="relative h-full w-[816px]">
+                    <div className={`relative h-full w-[${PAGE_WIDTH}px]`}>
                         {markers.map((marker) => {
-                            const position = (marker * 816 ) / 82;
+                            const position = (marker * PAGE_WIDTH) / 82;
 
                             return (
                                 <div 
@@ -113,7 +108,7 @@ export const Ruler = () => {
                                         </>
                                     )}
 
-                                    {marker % 5 === 0  && marker % 10 !== 0 && (
+                                    {marker % 5 === 0 && marker % 10 !== 0 && (
                                         <div className="absolute bottom-0 w-[1px] h-1.5 bg-neutral-500" />
                                     )}
 
@@ -121,7 +116,7 @@ export const Ruler = () => {
                                         <div className="absolute bottom-0 w-[1px] h-1 bg-neutral-500" />
                                     )}
                                 </div>
-                            )
+                            );
                         })}
                     </div>
                 </div>

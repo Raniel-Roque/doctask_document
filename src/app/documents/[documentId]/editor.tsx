@@ -26,6 +26,7 @@ import { useLiveblocksExtension } from "@liveblocks/react-tiptap";
 import { Threads } from "./threads";
 import { useStorage } from "@liveblocks/react";
 import { LEFT_MARGIN_DEFAULT, RIGHT_MARGIN_DEFAULT } from "@/constants/margins";
+import { DEFAULT_FONT } from "@/constants/page";
 
 interface EditorProps {
     initialContent?: string | undefined;
@@ -55,7 +56,7 @@ export const Editor = ({ initialContent }: EditorProps) => {
         },
         editorProps: {
             attributes: {
-                style: `padding-left: ${leftMargin}px; padding-right: ${rightMargin}px; font-family: 'Times New Roman', serif; font-size: 11px;`,
+                style: `padding-left: ${leftMargin}px; padding-right: ${rightMargin}px; font-family: '${DEFAULT_FONT}', serif; font-size: 11px;`,
                 class: "focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] w-[816px] pt-10 pr-14 pb-10 cursor-text",
             },
             handleDOMEvents: {
