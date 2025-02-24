@@ -53,7 +53,7 @@ export const RemoveDialog = ({ documentId, children }: RemoveDialogProps) => {
 
                             // ✅ Remove document AFTER navigating away
                             remove({ id: documentId })
-                                .then(() => toast.success("Document Removed"))
+                                .then(() => toast.success("Document Deleted"))
                                 .catch(() => toast.error("Something went wrong"))
                                 .finally(() => setIsDeleting(false));
                         }}

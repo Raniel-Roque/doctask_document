@@ -160,7 +160,7 @@ export const Navbar = ({ data }: NavbarProps) => {
                                     <RemoveDialog documentId={data._id}>
                                         <MenubarItem onClick={(e) => e.stopPropagation} onSelect={(e) => e.preventDefault()}>
                                             <TrashIcon className="mr-2 size-4"/>
-                                            Remove
+                                            Delete
                                         </MenubarItem>
                                     </RemoveDialog>
                                     <MenubarSeparator />

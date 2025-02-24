@@ -25,12 +25,21 @@ import { Ruler } from "./ruler";
 import { useLiveblocksExtension } from "@liveblocks/react-tiptap";
 import { Threads } from "./threads";
 import { useStorage } from "@liveblocks/react";
+import { LEFT_MARGIN_DEFAULT, RIGHT_MARGIN_DEFAULT } from "@/constants/margins";
 
-export const Editor = () => {
-    const leftMargin = useStorage((root) => root.leftMargin);
-    const rightMargin = useStorage((root) => root.rightMargin);
+interface EditorProps {
+    initialContent?: string | undefined;
+};
 
-    const liveblocks = useLiveblocksExtension();
+export const Editor = ({ initialContent }: EditorProps) => {
+    const leftMargin = useStorage((root) => root.leftMargin ?? LEFT_MARGIN_DEFAULT);
+    const rightMargin = useStorage((root) => root.rightMargin ?? RIGHT_MARGIN_DEFAULT);
+
+    const liveblocks = useLiveblocksExtension({
+        initialContent,
+        offlineSupport_experimental: true,
+    });
+
     const { setEditor } = useEditorStore();
 
     const editor = useEditor({
@@ -46,7 +55,7 @@ export const Editor = () => {
         },
         editorProps: {
             attributes: {
-                style: `padding-left: ${leftMargin ?? 56}px; padding-right: ${rightMargin ?? 56}px; font-family: 'Times New Roman', serif; font-size: 11px;`,
+                style: `padding-left: ${leftMargin}px; padding-right: ${rightMargin}px; font-family: 'Times New Roman', serif; font-size: 11px;`,
                 class: "focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] w-[816px] pt-10 pr-14 pb-10 cursor-text",
             },
             handleDOMEvents: {
