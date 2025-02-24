@@ -90,7 +90,7 @@ export const removeById = mutation({
     }
 
     const isOwner = document.ownerId === user.subject;
-    const isOrganizationAdmin = document.organizationId === organizationId && organizationRole === "admin"; // Only allow admins
+    const isOrganizationAdmin = !!(document.organizationId && document.organizationId === organizationId && organizationRole === "admin"); // Only allow admins
 
     if (!isOwner && !isOrganizationAdmin) {
       throw new ConvexError("Only the document owner or an organization admin can delete this document.");
@@ -117,12 +117,19 @@ export const updateById = mutation({
     const organizationRole = user.organization_role ?? undefined; // Get role from Clerk
 
     const isOwner = document.ownerId === user.subject;
-    const isOrganizationAdmin = document.organizationId === organizationId && organizationRole === "admin"; // Only allow admins
+    const isOrganizationAdmin = !!(document.organizationId && document.organizationId === organizationId && organizationRole === "admin"); // Only allow admins
 
     if (!isOwner && !isOrganizationAdmin) {
       throw new ConvexError("Only the document owner or an organization admin can rename this document.");
     }
 
     return await ctx.db.patch(args.id, { title: args.title });
+  },
+});
+
+export const getById = query({
+  args: { id: v.id("documents")},
+  handler: async (ctx, { id }) => {
+    return await ctx.db.get(id);
   },
 });
