@@ -4,6 +4,9 @@ import "./globals.css";
 import { NuqsAdapter } from "nuqs/adapters/next/app"
 import { ConvexClientProvider } from "@/components/convex-client-provider";
 import { Toaster } from "@/components/ui/sonner";
+import "@liveblocks/react-ui/styles.css";
+import "@liveblocks/react-tiptap/styles.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Create Next App",
