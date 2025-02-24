@@ -1,2 +1,2 @@
 export const PAGE_WIDTH = 816;
-export const PAGE_HEIGHT = 1024;
+export const DEFAULT_FONT = "Times New Roman";

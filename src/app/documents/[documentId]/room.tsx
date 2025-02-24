@@ -19,7 +19,6 @@ export function Room({ children }: { children: ReactNode }) {
   const params = useParams();
   const [users, setUsers] = useState<User[]>([]);
 
-  // ✅ Fetch users only once
   const fetchUsers = useCallback(async () => {
     try {
       const list = await getUsers();
@@ -52,8 +51,7 @@ export function Room({ children }: { children: ReactNode }) {
           }
 
           return await response.json();
-        } catch (error) {
-          console.error("Liveblocks Auth Error:", error);
+        } catch {
           toast.error("Liveblocks authentication failed.");
           return { error: "Authentication failed" }; // Prevents breaking Liveblocks
         }
@@ -79,8 +77,7 @@ export function Room({ children }: { children: ReactNode }) {
             id: document.id,
             name: document.name,
           }));
-        } catch (error) {
-          console.error("Error fetching rooms:", error);
+        } catch {
           return [];
         }
       }}

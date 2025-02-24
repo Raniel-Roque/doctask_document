@@ -26,7 +26,7 @@ import { useLiveblocksExtension } from "@liveblocks/react-tiptap";
 import { Threads } from "./threads";
 import { useStorage } from "@liveblocks/react";
 import { LEFT_MARGIN_DEFAULT, RIGHT_MARGIN_DEFAULT } from "@/constants/margins";
-import { DEFAULT_FONT } from "@/constants/page";
+import { DEFAULT_FONT, PAGE_WIDTH } from "@/constants/page";
 
 interface EditorProps {
     initialContent?: string | undefined;
@@ -57,7 +57,7 @@ export const Editor = ({ initialContent }: EditorProps) => {
         editorProps: {
             attributes: {
                 style: `padding-left: ${leftMargin}px; padding-right: ${rightMargin}px; font-family: '${DEFAULT_FONT}', serif; font-size: 11px;`,
-                class: "focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] w-[816px] pt-10 pr-14 pb-10 cursor-text",
+                class: `focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] w-[${PAGE_WIDTH}px] pt-10 pr-14 pb-10 cursor-text`,
             },
             handleDOMEvents: {
                 mouseover: (view, event) => {
@@ -113,7 +113,7 @@ export const Editor = ({ initialContent }: EditorProps) => {
     return (
         <div className="size-full overflow-x-auto bg-[#F9FBFD] px-4 print:p-0 print:bg-white print-overflow-visible">
             <Ruler />
-            <div className="min-w-max flex justify-center w-[816px] py-4 print:py-0 mx-auto print:w-full print:min-w-0">
+            <div className={`min-w-max flex justify-center w-[${PAGE_WIDTH}px] py-4 print:py-0 mx-auto print:w-full print:min-w-0`}>
                 <EditorContent editor={editor} />
                 <Threads editor={editor}/>
             </div>
