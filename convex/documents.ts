@@ -100,19 +100,9 @@ export const removeById = mutation({
       throw new ConvexError("Unauthorized User");
     }
 
-    const organizationId = user.organization_id ?? undefined;
-    const organizationRole = user.organization_role ?? undefined; // Get role from Clerk
-
     const document = await ctx.db.get(args.id);
     if (!document) {
       throw new ConvexError("Document Not Found");
-    }
-
-    const isOwner = document.ownerId === user.subject;
-    const isOrganizationAdmin = !!(document.organizationId && document.organizationId === organizationId && organizationRole === "admin"); // Only allow admins
-
-    if (!isOwner && !isOrganizationAdmin) {
-      throw new ConvexError("Only the document owner or an organization admin can delete this document.");
     }
 
     return await ctx.db.delete(args.id);
@@ -132,16 +122,6 @@ export const updateById = mutation({
       throw new ConvexError("Document Not Found");
     }
 
-    const organizationId = user.organization_id ?? undefined;
-    const organizationRole = user.organization_role ?? undefined; // Get role from Clerk
-
-    const isOwner = document.ownerId === user.subject;
-    const isOrganizationAdmin = !!(document.organizationId && document.organizationId === organizationId && organizationRole === "admin"); // Only allow admins
-
-    if (!isOwner && !isOrganizationAdmin) {
-      throw new ConvexError("Only the document owner or an organization admin can rename this document.");
-    }
-
     return await ctx.db.patch(args.id, { title: args.title });
   },
 });
@@ -149,6 +129,12 @@ export const updateById = mutation({
 export const getById = query({
   args: { id: v.id("documents")},
   handler: async (ctx, { id }) => {
-    return await ctx.db.get(id);
+    const document = await ctx.db.get(id);
+
+    if (!document) {
+      throw new ConvexError("Document Not Found");
+    }
+    
+    return document;
   },
 });

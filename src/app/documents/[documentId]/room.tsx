@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useState, useCallback } from "react";
 import {
   LiveblocksProvider,
   RoomProvider,
@@ -12,55 +12,59 @@ import { getUsers, getDocuments } from "./actions";
 import { toast } from "sonner";
 import { Id } from "../../../../convex/_generated/dataModel";
 
-type User = { id: string; name: string; avatar: string; };
+type User = { id: string; name: string; avatar: string };
 
 export function Room({ children }: { children: ReactNode }) {
   const params = useParams();
-
   const [users, setUsers] = useState<User[]>([]);
 
-  const fetchUsers = useMemo(
-    () => async () => {
-      try {
-        const list = await getUsers();
-        setUsers(list);
-      } catch {
-        toast.error("Failed to fetch users");
-      }
-    },
-    [], 
-  )
+  // ✅ Fetch users only once
+  const fetchUsers = useCallback(async () => {
+    try {
+      const list = await getUsers();
+      setUsers(list);
+    } catch {
+      toast.error("Failed to fetch users");
+    }
+  }, []);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
-
   return (
-    <LiveblocksProvider 
+    <LiveblocksProvider
       throttle={16}
-      authEndpoint={ async () => {
-        const endpoint = "/api/liveblocks-auth";
-        const room = params.documentId as string;
+      authEndpoint={async () => {
+        try {
+          const endpoint = "/api/liveblocks-auth";
+          const room = params.documentId as string;
 
-        const response = await fetch(endpoint, {
-          method: "POST",
-          body: JSON.stringify({ room }),
-        });
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }, // ✅ Added headers
+            body: JSON.stringify({ room }),
+          });
 
-        return await response.json();
+          if (!response.ok) {
+            throw new Error("Failed to authenticate with Liveblocks");
+          }
+
+          return await response.json();
+        } catch (error) {
+          console.error("Liveblocks Auth Error:", error);
+          toast.error("Liveblocks authentication failed.");
+          return { error: "Authentication failed" }; // Prevents breaking Liveblocks
+        }
       }}
-
-      resolveUsers={({ userIds }) => {
-        return userIds.map(
-          (userId) => users.find((user) => user.id === userId) ?? undefined
-        )
-      }}
+      resolveUsers={({ userIds }) =>
+        userIds.map((userId) => users.find((user) => user.id === userId) ?? undefined)
+      }
       resolveMentionSuggestions={({ text }) => {
         let filteredUsers = users;
 
         if (text) {
-            filteredUsers = users.filter((user) =>
+          filteredUsers = users.filter((user) =>
             user.name.toLowerCase().includes(text.toLowerCase())
           );
         }
@@ -68,19 +72,20 @@ export function Room({ children }: { children: ReactNode }) {
         return filteredUsers.map((user) => user.id);
       }}
       resolveRoomsInfo={async ({ roomIds }) => {
-        const documents = await getDocuments(roomIds as Id<"documents">[]);
-        return documents.map((document) => ({
-          id:document.id,
-          name: document.name
-        }))
+        try {
+          const documents = await getDocuments(roomIds as Id<"documents">[]);
+          return documents.map((document) => ({
+            id: document.id,
+            name: document.name,
+          }));
+        } catch (error) {
+          console.error("Error fetching rooms:", error);
+          return [];
+        }
       }}
     >
-      <RoomProvider 
-        id={params.documentId as string}
-        initialStorage={{ leftMargin: 56, rightMargin: 56 }}
-      >
-
-        <ClientSideSuspense fallback={<FullscreenLoader label="Room Loading..."/>}>
+      <RoomProvider id={params.documentId as string} initialStorage={{ leftMargin: 56, rightMargin: 56 }}>
+        <ClientSideSuspense fallback={<FullscreenLoader label="Room Loading..." />}>
           {children}
         </ClientSideSuspense>
       </RoomProvider>
