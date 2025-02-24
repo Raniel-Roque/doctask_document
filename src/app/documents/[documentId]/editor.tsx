@@ -26,7 +26,7 @@ import { useLiveblocksExtension } from "@liveblocks/react-tiptap";
 import { Threads } from "./threads";
 import { useStorage } from "@liveblocks/react";
 import { LEFT_MARGIN_DEFAULT, RIGHT_MARGIN_DEFAULT } from "@/constants/margins";
-import { DEFAULT_FONT } from "@/constants/page";
+import { DEFAULT_FONT } from "@/constants/page_settings";
 
 interface EditorProps {
     initialContent?: string | undefined;
