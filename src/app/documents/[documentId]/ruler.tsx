@@ -4,41 +4,47 @@ import { useStorage, useMutation } from "@liveblocks/react";
 import { LEFT_MARGIN_DEFAULT, MIN_SPACE, RIGHT_MARGIN_DEFAULT } from "@/constants/margins";
 import { PAGE_WIDTH } from "@/constants/page";
 
-const markers = Array.from({ length: 83 }, (_, i) => i)
+const markers = Array.from({ length: 83 }, (_, i) => i);
 
 export const Ruler = () => {
-    const leftMargin = useStorage((root) => root.leftMargin) ?? LEFT_MARGIN_DEFAULT;
+    const storageRoot = useStorage((root) => root); // Ensure storage is loaded
+    
+    const leftMargin = storageRoot?.leftMargin ?? LEFT_MARGIN_DEFAULT;
     const setLeftMargin = useMutation(({ storage }, position: number) => {
-        storage.set("leftMargin", position);
-    }, []);
+        if (storageRoot) {
+            storage.set("leftMargin", position);
+        }
+    }, [storageRoot]);
 
-    const rightMargin = useStorage((root) => root.rightMargin) ?? RIGHT_MARGIN_DEFAULT;
+    const rightMargin = storageRoot?.rightMargin ?? RIGHT_MARGIN_DEFAULT;
     const setRightMargin = useMutation(({ storage }, position: number) => {
-        storage.set("rightMargin", position);
-    }, []);
+        if (storageRoot) {
+            storage.set("rightMargin", position);
+        }
+    }, [storageRoot]);
 
     const [isDraggingLeft, setIsDraggingLeft] = useState(false);
     const [isDraggingRight, setIsDraggingRight] = useState(false);
     const rulerRef = useRef<HTMLDivElement>(null);
 
     const handleLeftMouseDown = () => {
-        setIsDraggingLeft(true)
-    }
+        setIsDraggingLeft(true);
+    };
 
     const handleRightMouseDown = () => {
-        setIsDraggingRight(true)
-    }
+        setIsDraggingRight(true);
+    };
     
-    const handleMouseMove = ( e: React.MouseEvent) => {
+    const handleMouseMove = (e: React.MouseEvent) => {
         if ((isDraggingLeft || isDraggingRight) && rulerRef.current) {
-            const container = rulerRef.current.querySelector("#ruler-container")
+            const container = rulerRef.current.querySelector("#ruler-container");
             
             if (container) {
                 const containerRect = container.getBoundingClientRect();
                 const relativeX = e.clientX - containerRect.left;
-                const rawPosition = Math.max(0, Math.min(PAGE_WIDTH, relativeX))
+                const rawPosition = Math.max(0, Math.min(PAGE_WIDTH, relativeX));
 
-                if ( isDraggingLeft ) {
+                if (isDraggingLeft) {
                     const maxLeftPosition = PAGE_WIDTH - rightMargin - MIN_SPACE;
                     const newLeftPosition = Math.min(rawPosition, maxLeftPosition);
                     setLeftMargin(newLeftPosition); 
@@ -50,20 +56,22 @@ export const Ruler = () => {
                 }
             }
         }
-    }
+    };
     
     const handleMouseUp = () => {
         setIsDraggingLeft(false);
         setIsDraggingRight(false);
-    }
+    };
 
     const handleLeftDoubleClick = () => {
         setLeftMargin(LEFT_MARGIN_DEFAULT);
-    }
+    };
 
     const handleRightDoubleClick = () => {
         setRightMargin(RIGHT_MARGIN_DEFAULT);
-    }
+    };
+
+    if (!storageRoot) return null; // Prevents using storage before it's loaded
 
     return ( 
         <div 
@@ -159,5 +167,5 @@ const Marker = ({
                 }}
             />
         </div>
-    )
+    );
 }
