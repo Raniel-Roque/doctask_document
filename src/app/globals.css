@@ -80,10 +80,11 @@ body {
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--border);
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
   }
 }
 
@@ -236,11 +237,11 @@ ol li {
 
     /* Link styles */
     a {
-      @apply text-blue-600;
+      color: theme('colors.blue.600'); /* ✅ Use Tailwind's theme function */
       cursor: pointer;
-  
-      &:hover {
-        @apply underline;
-      }
+    }
+
+    a:hover {
+      text-decoration: underline;
     }
 }
