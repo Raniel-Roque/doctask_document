@@ -6,11 +6,11 @@ import { auth } from "@clerk/nextjs/server";
 import { preloadQuery } from "convex/nextjs";
 
 interface DocumentIdPageProps {
-    params: { documentId: Id<"documents"> };
-}
+    params: Promise<{ documentId: Id<"documents"> }>;
+};
 
 const DocumentIdPage = async ({ params }: DocumentIdPageProps) => {
-    const { documentId } = params;
+    const { documentId } = await params;
 
     const { getToken } = await auth();
     const token = await getToken({ template: "convex" }) ?? undefined;
